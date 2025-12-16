@@ -1,0 +1,59 @@
+function maxTargetNodes(edges1: number[][], edges2: number[][], k: number): number[] {
+    const map1: number[][] = [];
+    const map2: number[][] = [];
+    for(let i=0;i<edges1.length;i++) {
+        if(!map1[edges1[i][0]]) {
+            map1[edges1[i][0]] = [];
+        }
+        if(!map1[edges1[i][1]]){
+            map1[edges1[i][1]] = [];
+        }
+        map1[edges1[i][0]][edges1[i][1]] = 1;
+        map1[edges1[i][1]][edges1[i][0]] = 1;
+    }
+    for(let i=0;i<edges2.length;i++) {
+        if(!map2[edges2[i][0]]) {
+            map2[edges2[i][0]] = [];
+        }
+        if(!map2[edges2[i][1]]){
+            map2[edges2[i][1]] = [];
+        }
+        map2[edges2[i][0]][edges2[i][1]] = 1;
+        map2[edges2[i][1]][edges2[i][0]] = 1;
+    }
+    // console.table(map1);
+    // console.table(map2);
+
+    let max = 0;
+    // for(let i=0;i<map2.length;i++){
+    //     const res1 = traval(i, map2, map2.map((_,index)=>index==i?1:0), k-1);
+    //     max = Math.max(max, res1);
+    // }
+
+    const res: number[] = [];
+    for(let i=0;i<map1.length;i++){
+        const res1 = traval(i, map1, map1.map((_,index)=>index==i?1:0), k);
+        res[i] = res1 + max;
+    }
+
+    return res;
+};
+
+function traval(start: number, map: number[][], visited: number[], k:number) {
+    if(k<=0) return k+1;
+    let res = 0;
+    for(let i=0;i<map[start].length;i++){
+        if(map[start][i] && !visited[i]){
+            console.log(start, i, k-1);
+            visited[i] = 1;
+            res += traval(i, map, visited, k-1);
+        }
+    }
+    return res + 1;
+}
+
+
+const res = maxTargetNodes([[2,1],[7,3],[0,4],[7,5],[2,6],[0,2],[0,7]], [[3,0],[1,2],[5,1],[6,3],[9,4],[5,6],[7,5],[9,7],[8,9]], 7);
+console.log('res', res);
+
+export {}
