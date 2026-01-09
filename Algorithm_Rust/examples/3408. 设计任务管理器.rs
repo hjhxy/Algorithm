@@ -1,24 +1,22 @@
-use std::cmp::Ordering;
-use std::collections::{BinaryHeap, HashMap};
+use std::collections::{BinaryHeap, HashMap, HashSet};
 
-#[derive(Eq, PartialEq, Debug)]
-struct Item {
+#[derive(Debug, Eq, PartialEq)]
+struct Task {
     task_id: i32,
-    priority: i32
+    priority: i32,
+    users: HashSet<i32>,
 }
 
-impl Ord for Item {
+impl Ord for Task {
     fn cmp(&self, other: &Self) -> Ordering {
-        match self.priority.cmp(&other.priority) {
-            Ordering::Equal => self.task_id.cmp(&other.task_id),
-            other => other,
-        }
+        self.priority.cmp(&other.priority)
+            .then_with(|| self.task_id.cmp(&other.task_id))
     }
 }
 
-
 struct TaskManager {
-    data: HashMap<i32, BinaryHeap<Item>>
+    users: HashMap<i32, BinaryHeap<&Task>>,
+    tasks: HashMap<i32, Task>
 }
 
 
@@ -29,41 +27,66 @@ struct TaskManager {
 impl TaskManager {
 
     fn new(tasks: Vec<Vec<i32>>) -> Self {
-        let mut task_manager = Self {
-            data: HashMap::new()
-        };
-        for user in tasks.iter() {
-            let mut heap = BinaryHeap::new();
-            heap.push(Item {
-                task_id: user[1],
-                priority: user[2],
-            });
-            task_manager.data.insert(user[0], heap);
+        Self {
+            users: HashMap::new(),
+            tasks: HashMap::new()
         }
-        task_manager
     }
     
-    fn add(&self, user_id: i32, task_id: i32, priority: i32) {
-        let heap = self.data.get_mut(&user_id).unwrap_or(&mut BinaryHeap::new());
-        heap.push(Item {
+    fn add(&mut self, user_id: i32, task_id: i32, priority: i32) {
+        let task = Task {
             task_id,
-            priority
-        });
-        self.data.insert(user_id, heap);
+            priority,
+            users: HashSet::from([user_id])
+        };
+        if let Some(task) = self.tasks.get_mut(&task_id) {
+            task.users.insert(user_id);
+        } else {
+            self.tasks.insert(task_id, &task);
+        }
+        
+        if let Some(user) = self.users.get_mut(&user_id) {
+            user.push(&task);
+        }
     }
     
     fn edit(&self, task_id: i32, new_priority: i32) {
+        if let Some(task) = self.tasks.get_mut(&task_id) {
+            task.priority = new_priority;
+        }
         
     }
     
     fn rmv(&self, task_id: i32) {
-        
+        if self.tasks.contains_key(&task_id) {
+            self.tasks.remove(&task_id)
+        }
     }
     
-    fn exec_top(&self) -> i32 {
-        for (user_id, task) in self.data {
-            if 
+    fn exec_top(&mut self) -> i32 {
+        if !self.tasks.len() {
+            return -1;
         }
+        let mut task = Task {
+            priority: 0,
+            task_id: -1,
+            users: HashSet::new()
+        };
+        for item in self.tasks.iter() {
+            if *item.0 > task.priority {
+                task = *item.1;
+            }
+        }
+        for user in task.users.iter() {
+            if let Some(heap) = self.users.get_mut(user){
+                while let Some(t) = heap.pop() {
+                    if  self.tasks.contains_key(&t.task_id) && t.task_id != task.task_id {
+                        break;
+                    }
+                }
+            }
+        }
+        self.tasks.remove(&task.task_id);
     }
 }
 
@@ -76,4 +99,4 @@ impl TaskManager {
  * let ret_4: i32 = obj.exec_top();
  */
 
-fn main (){}
+ fn main(){}
