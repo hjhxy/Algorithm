@@ -10,31 +10,19 @@ class TreeNode {
 }
 
 function convertBST(root: TreeNode | null): TreeNode | null {
-  if (!root) return root;
-  let new_root = new TreeNode();
-  traval(root, new_root, 0);
-  return new_root;
-}
+  let sum = 0;
 
-function traval(root: TreeNode, new_root: TreeNode, f_val: number): number {
-  let right = 0;
-  let left = 0;
-  if (root.right) {
-    new_root.right = new TreeNode();
-    right = traval(root.right, new_root.right, 0);
-    new_root.right.val = right;
+  function dfs(node: TreeNode | null) {
+    if (!node) return;
+
+    dfs(node.right);
+    sum += node.val;
+    node.val = sum;
+    dfs(node.left);
   }
-  if (root.left) {
-    new_root.left = new TreeNode();
-    left = traval(root.left, new_root.left, f_val + right);
-    new_root.left.val = left;
-  }
-  new_root.val = f_val + right + root.val;
-  return left;
+
+  dfs(root);
+  return root;
 }
 
 export {};
-
-
-// 干什么
-// 缺什么
