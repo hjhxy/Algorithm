@@ -11,7 +11,7 @@ impl Solution {
         }
 
         let mut dist = vec![i32::MAX; n];
-        let mut visited = vec![false; n];
+        let mut visitedj = vec![false; n];
         let mut heap = BinaryHeap::new();
 
         dist[0] = 0;
